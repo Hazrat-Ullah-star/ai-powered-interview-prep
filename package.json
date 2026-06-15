@@ -1,0 +1,17 @@
+{
+  "name": "ai-interview-platform-root",
+  "version": "1.0.0",
+  "description": "Root management for AI Interview Platform",
+  "scripts": {
+    "install-all": "npm install && cd AIInterviewPlatform/client && npm install && cd ../server && npm install",
+    "dev": "concurrently \"npm run client\" \"npm run server\"",
+    "server": "cd AIInterviewPlatform/server && npm run dev",
+    "client": "cd AIInterviewPlatform/client && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4"
+  }
+}
