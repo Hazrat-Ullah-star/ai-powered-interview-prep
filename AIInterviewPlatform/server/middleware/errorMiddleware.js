@@ -5,6 +5,8 @@ const errorMiddleware = (err, req, res, next) => {
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal Server Error';
 
+  console.error('SERVER ERROR:', err);
+
   // Mongoose duplicate key (e.g. duplicate email)
   if (err.code === 11000) {
     statusCode = 400;

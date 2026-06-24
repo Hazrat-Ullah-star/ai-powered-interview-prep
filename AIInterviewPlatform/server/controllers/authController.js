@@ -1,6 +1,7 @@
 const { db } = require('../config/firebase');
 const { generateToken } = require('../middleware/authMiddleware');
 const asyncHandler = require('../utils/asyncHandler');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 // @desc    Register user
@@ -9,35 +10,41 @@ const register = asyncHandler(async (req, res) => {
   const { fullName, email, password, role } = req.body;
 
   // Check for existing user
-  const userExists = await User.findOne({ email });
-  if (userExists) {
+  const usersRef = db.collection('users');
+  const snapshot = await usersRef.where('email', '==', email).limit(1).get();
+  
+  if (!snapshot.empty) {
     return res.status(400).json({ success: false, message: 'Email already registered' });
   }
 
-  // Create user
-  const user = await User.create({
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  // Create user doc
+  const newUserRef = usersRef.doc();
+  const userData = {
     fullName,
     email,
-    password,
-    role: role === 'admin' ? 'user' : role // Default to user for safety
-  });
+    password: hashedPassword,
+    role: role === 'admin' ? 'user' : role, // Default to user for safety
+    createdAt: new Date().toISOString()
+  };
 
-  if (user) {
-    const token = generateToken(user._id);
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      token,
-      user: {
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role
-      }
-    });
-  } else {
-    res.status(400).json({ success: false, message: 'Invalid user data' });
-  }
+  await newUserRef.set(userData);
+
+  const token = generateToken(newUserRef.id);
+  res.status(201).json({
+    success: true,
+    message: 'User registered successfully',
+    token,
+    user: {
+      _id: newUserRef.id,
+      fullName: userData.fullName,
+      email: userData.email,
+      role: userData.role
+    }
+  });
 });
 
 // @desc    Login user
@@ -50,20 +57,35 @@ const login = asyncHandler(async (req, res) => {
   }
 
   // Check for user
-  const user = await User.findOne({ email }).select('+password');
-  if (!user || !(await user.matchPassword(password))) {
+  const usersRef = db.collection('users');
+  const snapshot = await usersRef.where('email', '==', email).limit(1).get();
+  
+  if (snapshot.empty) {
     return res.status(401).json({ success: false, message: 'Invalid credentials' });
   }
 
-  const token = generateToken(user._id);
+  const userDoc = snapshot.docs[0];
+  const userData = userDoc.data();
+
+  // Check password (only if not a social login user)
+  if (!userData.password) {
+    return res.status(401).json({ success: false, message: 'This account uses social login. Please sign in via Google.' });
+  }
+
+  const isMatch = await bcrypt.compare(password, userData.password);
+  if (!isMatch) {
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+
+  const token = generateToken(userDoc.id);
   res.json({
     success: true,
     token,
     user: {
-      _id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role
+      _id: userDoc.id,
+      fullName: userData.fullName,
+      email: userData.email,
+      role: userData.role
     }
   });
 });

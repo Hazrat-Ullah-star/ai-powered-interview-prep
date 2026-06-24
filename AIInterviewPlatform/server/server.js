@@ -27,7 +27,14 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors()); // Simplified CORS as requested
+const clientOrigin = process.env.CLIENT_URL || 'http://localhost:5173';
+console.log('CORS Origin:', clientOrigin);
+const corsOptions = {
+  origin: clientOrigin,
+  credentials: true
+};
+app.use(cors(corsOptions)); // Configured CORS to allow credentials from client origin
+
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 if (process.env.NODE_ENV === 'development') {
