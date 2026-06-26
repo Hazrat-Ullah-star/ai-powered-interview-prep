@@ -1,16 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "AIInterviewPlatform/client/package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
-    },
-    {
-      "src": "AIInterviewPlatform/server/server.js",
-      "use": "@vercel/node"
-    }
-  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -18,7 +7,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/AIInterviewPlatform/client/$1"
+      "destination": "/AIInterviewPlatform/client/dist/$1"
     }
   ]
 }
