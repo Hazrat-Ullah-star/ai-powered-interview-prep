@@ -4,6 +4,8 @@
   "description": "Root management for AI Interview Platform",
   "scripts": {
     "install-all": "npm install && cd AIInterviewPlatform/client && npm install && cd ../server && npm install",
+    "build": "cd AIInterviewPlatform/client && npm run build",
+    "vercel-build": "cd AIInterviewPlatform/client && npm install && npm run build",
     "dev": "concurrently \"npm run client\" \"npm run server\"",
     "server": "cd AIInterviewPlatform/server && npm run dev",
     "client": "cd AIInterviewPlatform/client && npm run dev"
