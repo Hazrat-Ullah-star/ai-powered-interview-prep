@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { authAPI } from '../services/api';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '../firebase';
 import { FiMail, FiArrowLeft, FiMonitor, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
@@ -13,11 +14,11 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await authAPI.forgotPassword(email);
+      await sendPasswordResetEmail(auth, email);
       setSubmitted(true);
       toast.success('Reset email sent! Check your inbox.');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to send reset email');
+      toast.error(err.message || 'Failed to send reset email');
     } finally {
       setLoading(false);
     }

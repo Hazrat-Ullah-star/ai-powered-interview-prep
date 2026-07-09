@@ -74,6 +74,15 @@ const Signup = () => {
             </span>
           </div>
 
+          <div style={{ textAlign: 'right', marginTop: '-5px', marginBottom: '15px' }}>
+            <span 
+              style={{ fontSize: '12px', color: '#2563eb', cursor: 'pointer', fontWeight: 'bold' }} 
+              onClick={() => navigate("/forgot-password")}
+            >
+              Forgot Password?
+            </span>
+          </div>
+
           <button type="submit" disabled={loading}>
             {loading ? "Creating..." : "Sign Up"}
           </button>
